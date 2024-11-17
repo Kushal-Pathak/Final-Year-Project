@@ -2,21 +2,21 @@ class Switch {
   constructor(pos) {
     this.type = SWITCH;
     this.id = seed++;
-    this.r = 10;
+    this.r = 15;
+    this.pos = createVector(pos.x - (5 / 4) * this.r, pos.y);
     this.node = new PNode();
-    this.center = pos;
-    this.pos = createVector(pos.x - this.r * 2, pos.y);
-    this.node.pos.set(pos.x + this.r, pos.y);
+    this.node.pos.set(this.pos.x + this.r * 2.5, pos.y);
     this.node.static = true;
     this.node.dockable = false;
     this.node.superNode = true;
     this.node.removable = false;
-    this.fertile = false;
-    this.exists = true;
-    this.removable = true;
-    this.selected = false;
-    this.dragOffset = createVector(0, 0);
-    this.static = false;
+    this.fertile = false; //
+    this.exists = true; //
+    this.removable = true; //
+    this.selected = false; //
+    this.dragOffset = createVector(0, 0); //
+    this.static = false; //
+    this.new = true; //
   }
   draw() {
     stroke(255);
@@ -24,7 +24,6 @@ class Switch {
     line(this.pos.x, this.pos.y, this.node.pos.x, this.node.pos.y);
     fill(75);
     circle(this.pos.x, this.pos.y, this.r * 2);
-    this.node.update();
   }
   update() {
     this.delete();
@@ -37,6 +36,7 @@ class Switch {
       }
       this.genesis();
       this.draw();
+      this.node.update();
     }
   }
   switch() {
@@ -62,11 +62,15 @@ class Switch {
       if (!this.selected) {
         if (!dragObject) {
           if (mouseIsPressed) {
+            let x1 = this.pos.x + this.r;
+            let x2 = this.node.pos.x - NODE_RADIUS;
+            let y1 = this.pos.y - this.r;
+            let y2 = this.pos.y + this.r;
             if (
-              pressedPos.x > this.pos.x + this.r &&
-              pressedPos.x < this.node.pos.x - this.r &&
-              pressedPos.y > this.pos.y - this.r &&
-              pressedPos.y < this.pos.y + this.r
+              pressedPos.x > x1 &&
+              pressedPos.x < x2 &&
+              pressedPos.y > y1 &&
+              pressedPos.y < y2
             ) {
               dragObject = this;
               this.dragOffset.set(p5.Vector.sub(pressedPos, this.pos));
@@ -77,14 +81,21 @@ class Switch {
 
       if (dragObject == this) {
         this.pos.set(mouseX - this.dragOffset.x, mouseY - this.dragOffset.y);
+        if (this.pos.x - this.r > 100) {
+          this.new = false;
+        } else if (!this.new && this.pos.x - this.r <= 100) {
+          this.pos.x = 100 + this.r;
+        }
+        if (this.pos.y - this.r <= 0) {
+          this.pos.y = 0 + this.r;
+        }
       }
     }
   }
 
   updateStructure() {
     if (dragObject === this || this.selected) {
-      this.center.set(this.pos.x + this.r * 2, this.pos.y);
-      this.node.pos.set(this.pos.x + this.r * 3, this.pos.y);
+      this.node.pos.set(this.pos.x + this.r * 2.5, this.pos.y);
     }
   }
 

@@ -75,6 +75,16 @@ function selectMultiple() {
 
   if (dragObject === selectArea) {
     selectArea.p1.set(mouseX - areaDragOffset.x, mouseY - areaDragOffset.y);
+    if (selectArea.p1.x < 100) {
+      selectArea.p1.x = 100;
+      if (mouseX > 100) areaDragOffset.x = mouseX - 100;
+      if (areaDragOffset.x < 20) areaDragOffset.x = 10;
+    }
+    if (selectArea.p1.y < 0) {
+      selectArea.p1.y = 0;
+      if (mouseY > 0) areaDragOffset.y = mouseY - 0;
+      if (areaDragOffset.y < 20) areaDragOffset.y = 10;
+    }
     selectArea.p2 = p5.Vector.add(
       selectArea.p1,
       createVector(selectArea.w, selectArea.h)

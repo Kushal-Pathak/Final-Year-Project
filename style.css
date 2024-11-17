@@ -4,4 +4,8 @@
   padding: 0;
 }
 
+* {
+  user-select: none; /* Disables text selection for all elements */
+}
+
 

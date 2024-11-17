@@ -19,6 +19,7 @@ class Gate {
     this.freeze = false;
     this.fertile = false;
     this.fill = color(0, 0, 0);
+    this.new = true;
     this.prepareGate();
   }
 
@@ -65,7 +66,7 @@ class Gate {
         this.fill = color(75, 0, 130, 153); // Indigo with 60% opacity
         break;
     }
-    
+
     if (this.type === NOT) {
       this.n1 = 1;
       this.n2 = 1;
@@ -107,7 +108,7 @@ class Gate {
   draw() {
     stroke(255);
     strokeWeight(3);
-    fill(this.fill)
+    fill(this.fill);
     rect(this.pos.x, this.pos.y, this.w, this.h); //drawing gate body
     for (let i = 0; i < this.input.length; i++) {
       //this.input[i].draw();
@@ -140,6 +141,14 @@ class Gate {
 
       if (dragObject == this) {
         this.pos.set(mouseX - this.dragOffset.x, mouseY - this.dragOffset.y);
+        if (this.pos.x > 100) {
+          this.new = false;
+        } else if (!this.new && this.pos.x < 100) {
+          this.pos.x = 100;
+        }
+        if (this.pos.y < 0) {
+          this.pos.y = 0;
+        }
       }
     }
   }
@@ -283,5 +292,10 @@ class Gate {
         }
       }
     }
+  }
+
+  makePackage() {
+    let packagedGate = JSON.stringify(this);
+    return packagedGate;
   }
 }

@@ -35,8 +35,11 @@ function setup() {
 function draw() {
   background(20);
   noStroke();
-  fill(40);
+  fill(43, 48, 53);
   rect(0, 0, 100, height);
+  strokeWeight(1);
+  stroke(150);
+  line(0, 0, 100, 0);
   for (let gate of gates) {
     gate.update();
   }

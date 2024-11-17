@@ -16,11 +16,13 @@ function gateMenufunc() {
 }
 
 function generateGate() {
-  if (keyIsDown(49)) gates.push(new Gate(OR, createVector(mouseX, mouseY)));
+  //if (keyIsDown(49)) gates.push(new Gate(OR, createVector(mouseX, mouseY)));
+  if (keyIsDown(49)) gates.push(new Componentt(OR, createVector(mouseX, mouseY)));
 
   if (keyIsDown(50)) gates.push(new Gate(AND, createVector(mouseX, mouseY)));
 
-  if (keyIsDown(51)) gates.push(new Gate(NOT, createVector(mouseX, mouseY)));
+  //if (keyIsDown(51)) gates.push(new Gate(NOT, createVector(mouseX, mouseY)));
+  if (keyIsDown(51)) gates.push(new Componentt(NOT, createVector(mouseX, mouseY)));
 
   if (keyIsDown(52)) gates.push(new Gate(NOR, createVector(mouseX, mouseY)));
 
@@ -28,10 +30,17 @@ function generateGate() {
 
   if (keyIsDown(54)) gates.push(new Gate(XOR, createVector(mouseX, mouseY)));
 
+  // if (keyIsDown(83) || keyIsDown(115))
+  //   gates.push(new Switch(createVector(mouseX, mouseY)));
+
+  // if (keyIsDown(78) || keyIsDown(110)) {
+  //   gates.push(new PNode(createVector(mouseX, mouseY)));
+  // }
+
   if (keyIsDown(83) || keyIsDown(115))
-    gates.push(new Switch(createVector(mouseX, mouseY)));
+    gates.push(new Componentt(SWITCH, createVector(mouseX, mouseY)));
 
   if (keyIsDown(78) || keyIsDown(110)) {
-    gates.push(new PNode(createVector(mouseX, mouseY)));
+    gates.push(new Componentt(NODE,createVector(mouseX, mouseY)));
   }
 }

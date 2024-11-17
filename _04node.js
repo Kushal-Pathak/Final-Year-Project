@@ -5,7 +5,7 @@ class PNode {
     this.pos = pos;
     this.source = null;
     this.signal = 0;
-    this.color = this.signal ? color(255, 0, 0) : color(80,0,0);
+    this.color = this.signal ? color(255, 0, 0) : color(80, 0, 0);
     this.static = false;
     this.dockable = true;
     this.extendable = true;
@@ -16,18 +16,38 @@ class PNode {
     this.freeze = false;
     this.dragOffset = createVector(0, 0);
     this.fertile = false;
-    this.fill = color(50, 0, 0);
+    this.new = true; //
+  }
+  update(parentFreeze) {
+    if (parentFreeze) this.freeze = true;
+    this.delete();
+    if (this.exists) {
+      if (!this.freeze) {
+        if (this.source) {
+          if (this.source.exists) {
+            this.signal = this.source.signal;
+          } else {
+            this.signal = 0;
+          }
+        }
+        this.color = this.signal ? color(255, 0, 0) : color(80, 0, 0);
+        this.drag();
+        this.select();
+        this.connect();
+      }
+    }
+    this.genesis();
+    this.draw();
   }
   draw() {
     fill(this.color);
     stroke(255);
     strokeWeight(3);
-    fill(this.color);
     circle(this.pos.x, this.pos.y, 2 * NODE_RADIUS);
+    strokeWeight(4);
+    stroke(this.color);
+    noFill();
     if (source === this) {
-      strokeWeight(3);
-      stroke(this.color);
-      noFill();
       let x1 = this.pos.x;
       let y1 = this.pos.y;
       let x2 = mouseX;
@@ -36,15 +56,12 @@ class PNode {
       let cy1 = y1 - 0; //y1
       let cx2 = x1 + 0; //x1
       let cy2 = y2 + 0; //y2
-
       line(x1, y1, x2, y2);
       //bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
       //curve(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
     }
     if (this.source) {
       if (this.source.exists) {
-        stroke(this.color);
-        noFill();
         let x1 = this.pos.x;
         let y1 = this.pos.y;
         let x2 = this.source.pos.x;
@@ -53,7 +70,6 @@ class PNode {
         let cy1 = y1 - 0; //y1
         let cx2 = x1 + 0; //x1
         let cy2 = y2 + 0; //y2
-
         line(x1, y1, x2, y2);
         //bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
         //curve(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
@@ -104,23 +120,26 @@ class PNode {
   drag() {
     if (!this.static) {
       if (!this.selected) {
-        if (!this.static) {
-          if (keyIsDown(CONTROL)) {
-            if (!dragObject) {
-              if (mouseIsPressed) {
-                if (p5.Vector.dist(this.pos, pressedPos) < NODE_RADIUS) {
-                  dragObject = this;
-                  this.dragOffset = p5.Vector.sub(pressedPos, this.pos);
-                }
+        if (keyIsDown(CONTROL)) {
+          if (!dragObject) {
+            if (mouseIsPressed) {
+              if (p5.Vector.dist(this.pos, pressedPos) < NODE_RADIUS) {
+                dragObject = this;
+                this.dragOffset = p5.Vector.sub(pressedPos, this.pos);
               }
             }
           }
+        }
 
-          if (dragObject == this) {
-            this.pos.set(
-              mouseX - this.dragOffset.x,
-              mouseY - this.dragOffset.y
-            );
+        if (dragObject == this) {
+          this.pos.set(mouseX - this.dragOffset.x, mouseY - this.dragOffset.y);
+          if (this.pos.x > 100) {
+            this.new = false;
+          } else if (!this.new && this.pos.x <= 100) {
+            this.pos.x = 100 + NODE_RADIUS;
+          }
+          if (this.pos.y <= 0) {
+            this.pos.y = 0 + NODE_RADIUS;
           }
         }
       }
@@ -167,28 +186,6 @@ class PNode {
     if (!selection && !readyToMove) {
       this.selected = false;
     }
-  }
-
-  update(parentFreeze) {
-    if (parentFreeze) this.freeze = true;
-    this.delete();
-    if (this.exists) {
-      if (!this.freeze) {
-        if (this.source) {
-          if (this.source.exists) {
-            this.signal = this.source.signal;
-          } else {
-            this.signal = 0;
-          }
-        }
-        this.color = this.signal ? color(255, 0, 0) : color(80,0,0);
-        this.drag();
-        this.select();
-        this.connect();
-      }
-    }
-    this.genesis();
-    this.draw();
   }
 
   genesis() {
