@@ -22,7 +22,7 @@ class Componentt {
       this.signal = 0; //signal of this node
     } else if (this.type === SWITCH) {
       //switch initiation
-      
+
       this.switchRadius = 15; //radius of switch button
       this.pos = createVector(pos.x - (5 / 4) * this.switchRadius, pos.y); //position of switch button
       this.node = new Componentt(NODE); //node of switch
@@ -65,6 +65,7 @@ class Componentt {
         this.color = color(0, 0, 255, 153);
         n1 = 1;
       }
+
       this.n1 = n1; //number of input ports
       this.n2 = n2; //number of output ports
       this.source = []; //input sources (source nodes)
@@ -102,6 +103,7 @@ class Componentt {
       }
       this.inputGap = this.h / (this.n1 + 1);
       this.outputGap = this.h / (this.n2 + 1);
+      this.pos.set(this.pos.x - this.w / 2, this.pos.y - this.h / 2);
 
       //port spacing
       for (let i = 0; i < this.n1; i++) {
@@ -124,11 +126,16 @@ class Componentt {
     //no need to redraw children if already to be drawn by draw() method
     //if parent is frozen then children must also be frozen
     if (frozenParent) this.frozen = true;
-    this.drag();
-    this.updateStructure();
-    this.connect();
-    this.compute();
-    if (this.node) this.node.update(); //for switch
+    this.delete();
+    if (!this.frozen) {
+      this.select();
+      this.drag();
+      this.updateStructure();
+      this.connect();
+      this.compute();
+    }
+    if (this.node) this.node.update(true, this.frozen); //for switch
+
     if (this.input) {
       //for gate
       for (let input of this.input) {
@@ -141,6 +148,7 @@ class Componentt {
         output.update(true, this.frozen);
       }
     }
+    this.genesis();
     if (!drawn) this.draw();
   }
 
@@ -213,11 +221,13 @@ class Componentt {
       //compute switch
       if (!this.selected) {
         if (mouseIsPressed) {
-          let presedInside = p5.Vector.dist(this.pos, pressedPos) < this.switchRadius;
+          let presedInside =
+            p5.Vector.dist(this.pos, pressedPos) < this.switchRadius;
           if (presedInside) pressedObject = this;
         }
         if (mouseIsReleased) {
-          let releasedInside = p5.Vector.dist(this.pos, releasedPos) < this.switchRadius;
+          let releasedInside =
+            p5.Vector.dist(this.pos, releasedPos) < this.switchRadius;
           if (releasedInside) {
             if (switchBin === this) {
               this.node.signal = this.node.signal ? 0 : 1;
@@ -383,6 +393,230 @@ class Componentt {
         if (pressedInside) {
           this.source = null;
           this.signal = 0;
+        }
+      }
+    }
+  }
+
+  delete() {
+    if (this.type === NODE) {
+      //delete node
+      if (
+        (keyIsDown(88) || keyIsDown(120)) &&
+        !this.selected &&
+        this.removable &&
+        mouseIsPressed
+      ) {
+        let pressedInside = p5.Vector.dist(this.pos, pressedPos) < NODE_RADIUS;
+        if (pressedInside) {
+          this.exists = false;
+        }
+      }
+
+      if (!this.exists) {
+        let index = gates.indexOf(this); // Find the index of this object in the array
+        if (index > -1) {
+          gates.splice(index, 1); // Remove this object from the array
+        }
+      }
+      return;
+    }
+
+    if (this.type === SWITCH) {
+      //delete switch
+      if (
+        (keyIsDown(88) || keyIsDown(120)) &&
+        !this.selected &&
+        this.removable &&
+        mouseIsPressed
+      ) {
+        if (
+          pressedPos.x > this.pos.x + this.switchRadius &&
+          pressedPos.x < this.node.pos.x - NODE_RADIUS &&
+          pressedPos.y > this.pos.y - this.switchRadius &&
+          pressedPos.y < this.pos.y + this.switchRadius
+        ) {
+          this.exists = false;
+          this.node.exists = false;
+        }
+      }
+      if (!this.exists) {
+        let index = gates.indexOf(this); // Find the index of this object in the array
+        if (index > -1) {
+          gates.splice(index, 1); // Remove this object from the array
+        }
+      }
+      return;
+    }
+
+    if (this.type === CHIP) {
+      //delete chip
+      return;
+    }
+
+    //delete gates
+    if (
+      (keyIsDown(88) || keyIsDown(120)) &&
+      !this.selected &&
+      this.removable &&
+      mouseIsPressed
+    ) {
+      if (
+        pressedPos.x > this.pos.x + 5 &&
+        pressedPos.x < this.pos.x + this.w - 5 &&
+        pressedPos.y > this.pos.y &&
+        pressedPos.y < this.pos.y + this.h
+      ) {
+        //deleter(this)
+        this.exists = false;
+        for (let i = 0; i < this.n1; i++) {
+          this.input[i].exists = false;
+        }
+        for (let i = 0; i < this.n2; i++) {
+          this.output[i].exists = false;
+        }
+      }
+    }
+    if (!this.exists) {
+      let index = gates.indexOf(this); // Find the index of this object in the array
+      if (index > -1) {
+        let removedGates = gates.splice(index, 1); // Remove this object from the array
+        recycleBin.push(removedGates[0]);
+        seedCounter = seed;
+      }
+    }
+  }
+
+  select() {
+    if (this.type === NODE) {
+      //node select logic
+
+      if (selection && !this.selected && !this.static) {
+        if (
+          this.pos.x > selectArea.p1.x &&
+          this.pos.x < selectArea.p2.x &&
+          this.pos.y > selectArea.p1.y &&
+          this.pos.y < selectArea.p2.y
+        ) {
+          this.selected = true;
+          selectees.push(this);
+        }
+      }
+
+      if (!selection && !readyToMove) {
+        this.selected = false;
+      }
+      return;
+    }
+    if (this.type === SWITCH) {
+      //switch select logic
+
+      if (selection && !this.selected && !this.static) {
+        if (
+          this.pos.x > selectArea.p1.x &&
+          this.pos.x < selectArea.p2.x &&
+          this.pos.y > selectArea.p1.y &&
+          this.pos.y < selectArea.p2.y
+        ) {
+          this.selected = true;
+          selectees.push(this);
+        }
+      }
+
+      if (!selection && !readyToMove) {
+        this.selected = false;
+      }
+      return;
+    }
+    if (this.type === CHIP) {
+      //chip select logic
+      return;
+    }
+
+    //gate select logic
+    if (selection && !this.selected && !this.static) {
+      if (
+        this.pos.x > selectArea.p1.x &&
+        this.pos.x < selectArea.p2.x &&
+        this.pos.y > selectArea.p1.y &&
+        this.pos.y < selectArea.p2.y
+      ) {
+        this.selected = true;
+        selectees.push(this);
+      }
+    }
+
+    if (!selection && !readyToMove) {
+      this.selected = false;
+    }
+  }
+
+  genesis() {
+    if (this.type === NODE) {
+      //node genesis logic
+      if (this.fertile && !dragObject && mouseIsPressed) {
+        if (p5.Vector.dist(this.pos, pressedPos) < NODE_RADIUS) {
+          if (!myNewGate) {
+            //genesis logic
+            myNewGate = new Componentt(
+              NODE,
+              createVector(pressedPos.x, pressedPos.y)
+            );
+            myNewGate.dragOffset.set(p5.Vector.sub(pressedPos, this.pos));
+            gates.push(myNewGate);
+            dragObject = myNewGate;
+          }
+        }
+      }
+      return;
+    }
+
+    if (this.type === SWITCH) {
+      //switch genesis logic
+      if (this.fertile && !dragObject && mouseIsPressed) {
+        if (
+          pressedPos.x > this.pos.x + this.switchRadius &&
+          pressedPos.x < this.node.pos.x - NODE_RADIUS &&
+          pressedPos.y > this.pos.y - this.switchRadius &&
+          pressedPos.y < this.pos.y + this.switchRadius
+        ) {
+          if (!myNewGate) {
+            //genesis logic
+            myNewGate = new Componentt(
+              SWITCH,
+              createVector(pressedPos.x, pressedPos.y)
+            );
+            myNewGate.dragOffset.set(p5.Vector.sub(pressedPos, this.pos));
+            gates.push(myNewGate);
+            dragObject = myNewGate;
+          }
+        }
+      }
+      return;
+    }
+
+    if (this.type === CHIP) {
+      //chip genesis logic
+      return;
+    }
+
+    //gate genesis logic
+    if (this.fertile && !dragObject && mouseIsPressed) {
+      if (
+        pressedPos.x > this.pos.x + 5 &&
+        pressedPos.x < this.pos.x + this.w - 5 &&
+        pressedPos.y > this.pos.y &&
+        pressedPos.y < this.pos.y + this.h
+      ) {
+        if (!myNewGate) {
+          //genesis logic
+          myNewGate = new Componentt(
+            this.type,
+            createVector(pressedPos.x, pressedPos.y)
+          );
+          myNewGate.dragOffset.set(p5.Vector.sub(pressedPos, this.pos));
+          gates.push(myNewGate);
+          dragObject = myNewGate;
         }
       }
     }
