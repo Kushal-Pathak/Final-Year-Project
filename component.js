@@ -22,7 +22,6 @@ class Componentt {
       this.signal = 0; //signal of this node
     } else if (this.type === SWITCH) {
       //switch initiation
-
       this.switchRadius = 15; //radius of switch button
       this.pos = createVector(pos.x - (5 / 4) * this.switchRadius, pos.y); //position of switch button
       this.node = new Componentt(NODE); //node of switch
@@ -37,6 +36,10 @@ class Componentt {
       this.node.source = null;
     } else if (this.type === CHIP) {
       //chip initiation
+      this.pos = createVector(150, 50);
+      this.h = 200;
+      this.w = 200;
+      this.color = color(150, 150, 150, 50);
     } else {
       //logic gate initiation
       n1 = 2;
@@ -187,6 +190,10 @@ class Componentt {
       this.node.draw();
     } else if (this.type === CHIP) {
       //drawing chip
+      stroke(255);
+      strokeWeight(3);
+      fill(this.color);
+      rect(this.pos.x, this.pos.y, this.pos.x + this.w, this.pos.y + this.h);
     } else {
       //drawing gate
       stroke(255);
@@ -303,6 +310,32 @@ class Componentt {
           }
         }
       }
+    } else if (this.type === CHIP) {
+      if (!this.static) {
+        if (!dragObject && !this.selected && mouseIsPressed) {
+          if (
+            pressedPos.x > this.pos.x + 5 &&
+            pressedPos.x < this.pos.x + this.w - 5 &&
+            pressedPos.y > this.pos.y &&
+            pressedPos.y < this.pos.y + this.h
+          ) {
+            dragObject = this;
+            this.dragOffset.set(p5.Vector.sub(pressedPos, this.pos));
+          }
+        }
+
+        if (dragObject === this) {
+          this.pos.set(mouseX - this.dragOffset.x, mouseY - this.dragOffset.y);
+          if (this.pos.x > 100) {
+            this.new = false;
+          } else if (!this.new && this.pos.x < 100) {
+            this.pos.x = 100;
+          }
+          if (this.pos.y < 0) {
+            this.pos.y = 0;
+          }
+        }
+      }
     } else {
       if (!this.static) {
         if (!dragObject && !this.selected && mouseIsPressed) {
@@ -317,7 +350,7 @@ class Componentt {
           }
         }
 
-        if (dragObject == this) {
+        if (dragObject === this) {
           this.pos.set(mouseX - this.dragOffset.x, mouseY - this.dragOffset.y);
           if (this.pos.x > 100) {
             this.new = false;
@@ -401,6 +434,8 @@ class Componentt {
   delete() {
     if (this.type === NODE) {
       //delete node
+      if (this.pos.x - NODE_RADIUS < 100 && this.new && this !== dragObject)
+        this.exists = false;
       if (
         (keyIsDown(88) || keyIsDown(120)) &&
         !this.selected &&
@@ -424,6 +459,13 @@ class Componentt {
 
     if (this.type === SWITCH) {
       //delete switch
+      if (
+        this.pos.x - this.switchRadius < 100 &&
+        this.new &&
+        this !== dragObject
+      )
+        this.exists = false;
+      if (!this.new) this.node.exists = true;
       if (
         (keyIsDown(88) || keyIsDown(120)) &&
         !this.selected &&
@@ -484,6 +526,13 @@ class Componentt {
         recycleBin.push(removedGates[0]);
         seedCounter = seed;
       }
+    }
+    if (this.pos.x < 100 && this.new && this !== dragObject)
+      this.exists = false;
+    if (!this.new) {
+      this.input[0].exists = true;
+      if (this.input[1]) this.input[1].exists = true;
+      this.output[0].exists = true;
     }
   }
 

@@ -12,7 +12,7 @@ function gateMenufunc() {
     gateMenu[i].fertile = true;
   }
   gateMenu[6].node.extendable = false;
-  gateMenu[7].extendable = false;
+  //gateMenu[7].extendable = false;
   //gateMenu[7].dockable = false;
 }
 

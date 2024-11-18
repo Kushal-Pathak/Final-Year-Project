@@ -1,19 +1,16 @@
 function selectMultiple() {
-  if (mouseIsPressed) {
-    if (!dragObject) {
-      if (!source) {
-        if (!pressedObject) {
-          if (!selection) {
-            if (!readyToMove) {
-              if (pressedPos.x > 100) {
-                selection = true;
-              }
-            }
-          }
-        }
-      }
-    }
+  if (
+    mouseIsPressed &&
+    !dragObject &&
+    !source &&
+    !pressedObject &&
+    !selection &&
+    !readyToMove &&
+    pressedPos.x > 100
+  ) {
+    selection = true;
   }
+
   if (selection) {
     let x1 = pressedPos.x;
     let y1 = pressedPos.y;
@@ -40,7 +37,6 @@ function selectMultiple() {
     stroke(255);
     strokeWeight(0.5);
     fill(128, 0, 255, 50);
-
     rect(selectArea.p1.x, selectArea.p1.y, selectArea.w, selectArea.h);
   }
 

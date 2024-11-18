@@ -8,4 +8,14 @@
   user-select: none; /* Disables text selection for all elements */
 }
 
+.navbar-nav .nav-link {
+  color: #ffffff; /* Normal text color */
+  transition: color 0.3s ease, background-color 0.3s ease; /* Smooth transition */
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ffcc00; /* Text color on hover */
+  background-color: rgba(255, 255, 255, 0.1); /* Subtle background change */
+  border-radius: 5px; /* Rounded background */
+}
 

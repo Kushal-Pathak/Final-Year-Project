@@ -9,6 +9,7 @@ let source = null;
 let wireBin = null;
 let seed = 0;
 let gates = [];
+let gatesBin = [];
 let pressedObject = null;
 let switchBin = null;
 let selection = false;
@@ -19,6 +20,7 @@ let gateMenu = [];
 let myNewGate = null;
 let recycleBin = [];
 let seedCounter = seed;
+let mode = SIM;
 function setup() {
   //frameRate(5)
   createCanvas(windowWidth - 17, windowHeight - 56);
@@ -30,9 +32,16 @@ function setup() {
   textSize(20);
   selectArea = { p1: createVector(0, 0), p2: createVector(0, 0), w: 0, h: 0 };
   gateMenufunc();
+  simulationMode()
 }
 
 function draw() {
+  if (mode === SIM) {
+    //greenify the simulation button
+  }
+  if (mode === IC) {
+    //greenify the new chip button
+  }
   background(20);
   noStroke();
   fill(43, 48, 53);

@@ -32,10 +32,17 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">New</a>
+              <li class="nav-item me-2">
+                <a
+                  onclick="clearSimulation()"
+                  class="nav-link active"
+                  aria-current="page"
+                  href="#"
+                  >New</a
+                >
               </li>
-              <li class="nav-item dropdown">
+
+              <li class="nav-item dropdown me-2">
                 <a
                   class="nav-link active dropdown-toggle"
                   href="#"
@@ -52,15 +59,60 @@
                 </ul>
               </li>
 
-              <li class="nav-item">
+              <li class="nav-item me-2">
                 <a class="nav-link active" aria-current="page" href="#">Save</a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item me-2">
+                <a
+                  class="nav-link active"
+                  onclick="downloadCircuit()"
+                  aria-current="page"
+                  href="#"
+                  >Download</a
+                >
+              </li>
+              <li class="nav-item me-2">
+                <input
+                  type="file"
+                  id="fileInput"
+                  accept=".json"
+                  style="display: none"
+                />
+                <a
+                  id="uploadButton"
+                  class="nav-link active"
+                  onclick="uploadCircuit()"
+                  aria-current="page"
+                  href="#"
+                  >Upload</a
+                >
+              </li>
+              <li class="nav-item me-2">
+                <a
+                  id="sim_btn"
+                  onclick="simulationMode()"
+                  class="nav-link active"
+                  aria-current="page"
+                  href="#"
+                  >SIMULATION</a
+                >
+              </li>
+              <li class="nav-item me-2">
+                <a
+                  id="ic_btn"
+                  onclick="ICMode()"
+                  class="nav-link active"
+                  aria-current="page"
+                  href="#"
+                  >NEW CHIP</a
+                >
+              </li>
+              <li class="nav-item me-2">
                 <a class="nav-link active" aria-current="page" href="#"
                   >Log In</a
                 >
               </li>
-              <li class="nav-item">
+              <li class="nav-item me-2">
                 <a class="nav-link active" aria-current="page" href="#"
                   >Register</a
                 >
@@ -76,9 +128,9 @@
       crossorigin="anonymous"
     ></script>
     <script src="_99p5.min.js"></script>
+    <script src="_03constants.js"></script>
     <script src="_01sketch.js"></script>
     <script src="_02gate.js"></script>
-    <script src="_03constants.js"></script>
     <script src="_04node.js"></script>
     <script src="_05switch.js"></script>
     <script src="_06generate_gate.js"></script>
