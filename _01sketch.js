@@ -10,6 +10,7 @@ let wireBin = null;
 let seed = 0;
 let gates = [];
 let gatesBin = [];
+let chip = null;
 let pressedObject = null;
 let switchBin = null;
 let selection = false;
@@ -22,37 +23,32 @@ let recycleBin = [];
 let seedCounter = seed;
 let mode = SIM;
 function setup() {
-  //frameRate(5)
   createCanvas(windowWidth - 17, windowHeight - 56);
   areaDragOffset = createVector(0, 0);
   pressedPos = createVector(0, 0);
   releasedPos = createVector(0, 0);
   strokeWeight(3);
   textAlign(CENTER, CENTER);
-  textSize(20);
+  textSize(15);
   selectArea = { p1: createVector(0, 0), p2: createVector(0, 0), w: 0, h: 0 };
   gateMenufunc();
-  simulationMode()
+  simulationMode();
+  seed = Date.now();
+  //ICMode()
 }
 
 function draw() {
-  if (mode === SIM) {
-    //greenify the simulation button
-  }
-  if (mode === IC) {
-    //greenify the new chip button
-  }
-  background(20);
+  background(150);
   noStroke();
   fill(43, 48, 53);
   rect(0, 0, 100, height);
   strokeWeight(1);
   stroke(150);
   line(0, 0, 100, 0);
-  for (let gate of gates) {
+  for (let gate of gateMenu) {
     gate.update();
   }
-  for (let gate of gateMenu) {
+  for (let gate of gates) {
     gate.update();
   }
   bin = null;

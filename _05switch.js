@@ -2,14 +2,14 @@ class Switch {
   constructor(pos) {
     this.type = SWITCH;
     this.id = seed++;
-    this.r = 15;
-    this.pos = createVector(pos.x - (5 / 4) * this.r, pos.y);
+    this.switchRadius = 15;
+    this.pos = createVector(pos.x - (5 / 4) * this.switchRadius, pos.y);
     this.node = new PNode();
-    this.node.pos.set(this.pos.x + this.r * 2.5, pos.y);
+    this.node.pos.set(this.pos.x + this.switchRadius * 2.5, pos.y);
     this.node.static = true;
     this.node.dockable = false;
-    this.node.superNode = true;
     this.node.removable = false;
+    this.node.source = null;
     this.fertile = false; //
     this.exists = true; //
     this.removable = true; //
@@ -17,37 +17,71 @@ class Switch {
     this.dragOffset = createVector(0, 0); //
     this.static = false; //
     this.new = true; //
+    this.visible = true;
+    this.frozen = false; // freeze every updates except draw()
+    this.color = color(0, 0, 0);
   }
+
+  update() {
+    //no need to redraw child if already drawn by draw()
+    //if parent is frozen then children must also be frozen
+    this.delete();
+    if (this.exists) {
+      if (!this.fertile) {
+        this.drag();
+        this.select();
+        this.updateStructure();
+        this.switch();
+      }
+      this.node.update();
+      this.genesis();
+      this.draw();
+    }
+  }
+
   draw() {
     stroke(255);
     strokeWeight(3);
     line(this.pos.x, this.pos.y, this.node.pos.x, this.node.pos.y);
-    fill(75);
-    circle(this.pos.x, this.pos.y, this.r * 2);
+    fill(100, 0, 0);
+    circle(this.pos.x, this.pos.y, this.switchRadius * 2);
+    this.node.draw();
   }
-  update() {
-    this.delete();
-    if (this.exists) {
-      if (!this.freeze) {
-        this.drag();
-        this.select();
-        this.switch();
-        this.updateStructure();
+
+  drag() {
+    if (!this.static) {
+      if (!dragObject && !this.selected && mouseIsPressed) {
+        if (pressedInside(this)) {
+          dragObject = this;
+          this.dragOffset.set(p5.Vector.sub(pressedPos, this.pos));
+        }
       }
-      this.genesis();
-      this.draw();
-      this.node.update();
+
+      if (dragObject == this) {
+        this.pos.set(mouseX - this.dragOffset.x, mouseY - this.dragOffset.y);
+
+        //check left bound with gate menu
+        if (this.pos.x - this.switchRadius > 100) {
+          this.new = false;
+          this.node.new = false;
+        } else if (!this.new && this.pos.x - this.switchRadius <= 100) {
+          this.pos.x = 100 + this.switchRadius;
+        }
+        //check upper bound
+        if (this.pos.y - this.switchRadius <= 0) {
+          this.pos.y = 0 + this.switchRadius;
+        }
+      }
     }
   }
+
   switch() {
     if (!this.selected) {
       if (mouseIsPressed) {
-        let presedInside = p5.Vector.dist(this.pos, pressedPos) < this.r;
-        if (presedInside) pressedObject = this;
+        if (pressedInside(this, true)) pressedObject = this;
       }
       if (mouseIsReleased) {
-        let releasedInside = p5.Vector.dist(this.pos, releasedPos) < this.r;
-        if (releasedInside) {
+        if (releasedInside(this, true)) {
           if (switchBin === this) {
             this.node.signal = this.node.signal ? 0 : 1;
             switchBin = null;
@@ -57,88 +91,38 @@ class Switch {
     }
   }
 
-  drag() {
-    if (!this.static) {
-      if (!this.selected) {
-        if (!dragObject) {
-          if (mouseIsPressed) {
-            let x1 = this.pos.x + this.r;
-            let x2 = this.node.pos.x - NODE_RADIUS;
-            let y1 = this.pos.y - this.r;
-            let y2 = this.pos.y + this.r;
-            if (
-              pressedPos.x > x1 &&
-              pressedPos.x < x2 &&
-              pressedPos.y > y1 &&
-              pressedPos.y < y2
-            ) {
-              dragObject = this;
-              this.dragOffset.set(p5.Vector.sub(pressedPos, this.pos));
-            }
-          }
-        }
-      }
-
-      if (dragObject == this) {
-        this.pos.set(mouseX - this.dragOffset.x, mouseY - this.dragOffset.y);
-        if (this.pos.x - this.r > 100) {
-          this.new = false;
-        } else if (!this.new && this.pos.x - this.r <= 100) {
-          this.pos.x = 100 + this.r;
-        }
-        if (this.pos.y - this.r <= 0) {
-          this.pos.y = 0 + this.r;
-        }
-      }
-    }
-  }
-
   updateStructure() {
     if (dragObject === this || this.selected) {
-      this.node.pos.set(this.pos.x + this.r * 2.5, this.pos.y);
+      this.node.pos.set(this.pos.x + this.switchRadius * 2.5, this.pos.y);
     }
   }
 
   delete() {
-    if (keyIsDown(88) || keyIsDown(120)) {
-      if (!this.selected) {
-        if (this.removable) {
-          if (mouseIsPressed) {
-            if (
-              pressedPos.x > this.pos.x + this.r &&
-              pressedPos.x < this.node.pos.x - this.r &&
-              pressedPos.y > this.pos.y - this.r &&
-              pressedPos.y < this.pos.y + this.r
-            ) {
-              this.exists = false;
-              this.node.exists = false;
-            }
-          }
+    if (this.removable) {
+      if (
+        (keyIsDown(88) || keyIsDown(120)) &&
+        !this.selected &&
+        mouseIsPressed
+      ) {
+        if (pressedInside(this)) {
+          this.exists = false;
+          this.node.exists = false;
         }
       }
-    }
-    if (!this.exists) {
-      let index = gates.indexOf(this); // Find the index of this object in the array
-      if (index > -1) {
-        gates.splice(index, 1); // Remove this object from the array
+      if (!this.exists) {
+        deleteFromArrayIfExists(this, gates);
       }
+      if (this.pos.x - this.switchRadius < 100 && this !== dragObject)
+        this.exists = false;
     }
   }
 
   select() {
-    if (selection) {
-      if (!this.selected) {
-        if (!this.static) {
-          if (
-            this.pos.x > selectArea.p1.x &&
-            this.pos.x < selectArea.p2.x &&
-            this.pos.y > selectArea.p1.y &&
-            this.pos.y < selectArea.p2.y
-          ) {
-            this.selected = true;
-            selectees.push(this);
-          }
-        }
+    //switch select logic
+    if (selection && !this.selected && !this.static) {
+      if (isInsideSelectArea(this)) {
+        this.selected = true;
+        selectees.push(this);
       }
     }
 
@@ -148,25 +132,23 @@ class Switch {
   }
 
   genesis() {
-    if (this.fertile) {
-      if (!dragObject) {
-        if (mouseIsPressed) {
-          if (
-            pressedPos.x > this.pos.x + this.r &&
-            pressedPos.x < this.node.pos.x - this.r &&
-            pressedPos.y > this.pos.y - this.r &&
-            pressedPos.y < this.pos.y + this.r
-          ) {
-            if (!myNewGate) {
-              //genesis logic
-              myNewGate = new Switch(createVector(pressedPos.x, pressedPos.y));
-              myNewGate.dragOffset.set(p5.Vector.sub(pressedPos, this.pos));
-              gates.push(myNewGate);
-              dragObject = myNewGate;
-            }
-          }
+    //switch genesis logic
+    if (this.fertile && !dragObject && mouseIsPressed) {
+      if (pressedInside(this)) {
+        if (!myNewGate) {
+          //genesis logic
+          myNewGate = new Componentt(
+            SWITCH,
+            createVector(pressedPos.x, pressedPos.y)
+          );
+          myNewGate.dragOffset.set(p5.Vector.sub(pressedPos, this.pos));
+          gates.push(myNewGate);
+          dragObject = myNewGate;
         }
       }
     }
+  }
+  getNewId() {
+    this.id = seed++;
   }
 }

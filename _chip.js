@@ -1,62 +1,39 @@
-class Gate {
-  constructor(type, pos) {
+class Chip {
+  constructor() {
     this.id = seed++;
-    this.type = type; //type of gate
-    this.pos = pos; //position of gate in canvas
+    this.type = CHIP; //type of gate
+    this.pos = createVector(125, 25);
     this.n1 = this.type === NOT ? 1 : 2;
     this.n2 = 1;
-    this.h = 30; //height of gate
-    this.w = 60; //width of gate
+    this.h = height - 50; //height of gate
+    this.w = width - 150; //width of gate
     this.input = []; //input signals
     this.output = []; //output signals
     this.exists = true;
-    this.removable = true;
+    this.removable = false;
     this.selected = false;
-    this.static = false;
+    this.static = true;
     this.fertile = false;
     this.new = true;
     this.visible = true;
     this.dragOffset = createVector(0, 0);
-    this.pos.set(this.pos.x - this.w / 2, this.pos.y - this.h / 2);
-    assignColor(this);
-
-    //generate input nodes
-    for (let i = 0; i < this.n1; i++) {
-      let node = new Componentt(NODE);
-      node.static = true;
-      node.extendable = false;
-      node.removable = false;
-      this.input.push(node);
-    }
-
-    //generate output nodes
-    for (let i = 0; i < this.n2; i++) {
-      let node = new Componentt(NODE);
-      node.static = true;
-      node.dockable = false;
-      node.removable = false;
-      this.output.push(node);
-    }
-
-    //port spacing
-    this.h = 42;
-    this.margin = 1.5 * NODE_RADIUS;
-    let len = this.h - 2 * this.margin;
-    if (this.n1 > 1) {
-      this.inputGap = len / (this.n1 - 1);
-      for (let i = 0; i < this.n1; i++) {
-        this.input[i].pos.x = this.pos.x;
-        this.input[i].pos.y = this.pos.y + this.margin + i * this.inputGap;
-      }
-    } else {
-      this.input[0].pos.x = this.pos.x;
-      this.input[0].pos.y = this.pos.y + this.h / 2;
-    }
-    this.output[0].pos.x = this.pos.x + this.w;
-    this.output[0].pos.y = this.pos.y + this.h / 2;
-
+    this.name = "NEW CHIP";
     this.cx = this.pos.x + this.w / 2;
     this.cy = this.pos.y + this.h / 2;
+    this.fabricating = true;
+    this.inputArea = {
+      x: this.pos.x,
+      y: this.pos.y,
+      w: IO_AREA_WIDTH,
+      h: this.h,
+    };
+    this.outputArea = {
+      x: this.pos.x + this.w - IO_AREA_WIDTH,
+      y: this.pos.y,
+      w: IO_AREA_WIDTH,
+      h: this.h,
+    };
+    assignColor(this);
   }
 
   update() {
@@ -66,12 +43,10 @@ class Gate {
         this.drag();
         this.select();
         this.updateStructure();
-        computeGate(this);
       }
-      this.genesis();
       this.draw();
-      for (let input of this.input) input.update(CHILD_NODES_ARE_DRAWN);
-      for (let output of this.output) output.update(CHILD_NODES_ARE_DRAWN);
+      for (let input of this.input) input.update();
+      for (let output of this.output) output.update();
     }
   }
 
@@ -82,15 +57,23 @@ class Gate {
       strokeWeight(3);
       fill(this.color);
       rect(this.pos.x, this.pos.y, this.w, this.h); //drawing gate body
-      for (let i = 0; i < this.input.length; i++) {
-        this.input[i].draw();
-      }
-      for (let i = 0; i < this.output.length; i++) {
-        this.output[i].draw();
+      if (this.fabricating) {
+        rect(
+          this.inputArea.x,
+          this.inputArea.y,
+          this.inputArea.w,
+          this.inputArea.h
+        );
+        rect(
+          this.outputArea.x,
+          this.outputArea.y,
+          this.outputArea.w,
+          this.outputArea.h
+        );
       }
       noStroke();
       fill(255);
-      text(this.type, this.cx, this.cy);
+      text(this.name, this.cx, this.cy);
     }
   }
 
@@ -129,9 +112,15 @@ class Gate {
         this.input[0].pos.x = this.pos.x;
         this.input[0].pos.y = this.pos.y + this.h / 2;
       }
-      this.output[0].pos.x = this.pos.x + this.w;
-      this.output[0].pos.y = this.pos.y + this.h / 2;
-
+      if (this.n2 > 1) {
+        for (let i = 0; i < this.n2; i++) {
+          this.output[i].pos.x = this.pos.x + this.w;
+          this.output[i].pos.y = this.pos.y + this.margin + i * this.outputGap;
+        }
+      } else {
+        this.output[0].pos.x = this.pos.x + this.w;
+        this.output[0].pos.y = this.pos.y + this.h / 2;
+      }
       this.cx = this.pos.x + this.w / 2;
       this.cy = this.pos.y + this.h / 2;
     }
@@ -147,15 +136,14 @@ class Gate {
       ) {
         if (pressedInside(this)) {
           this.exists = false;
-          for (let i = 0; i < this.n1; i++) {
-            this.input[i].exists = false;
+          for (let input of this.input) {
+            input.exists = false;
           }
-          for (let i = 0; i < this.n2; i++) {
-            this.output[i].exists = false;
+          for (let output of this.output) {
+            output.exists = false;
           }
         }
       }
-      if (this.pos.x < 100 && this !== dragObject) this.exists = false;
       if (!this.exists) {
         deleteFromArrayIfExists(this, gates);
       }
@@ -174,23 +162,6 @@ class Gate {
       this.selected = false;
     }
   }
-
-  genesis() {
-    if (this.fertile && !dragObject && mouseIsPressed) {
-      if (pressedInside(this)) {
-        if (!myNewGate) {
-          myNewGate = new Componentt(
-            this.type,
-            createVector(pressedPos.x, pressedPos.y)
-          );
-          myNewGate.dragOffset.set(p5.Vector.sub(pressedPos, this.pos));
-          gates.push(myNewGate);
-          dragObject = myNewGate;
-        }
-      }
-    }
-  }
-
   getNewId() {
     this.id = seed++;
   }

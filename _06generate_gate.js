@@ -10,6 +10,7 @@ function gateMenufunc() {
   for (let i = 0; i < gateMenu.length; i++) {
     gateMenu[i].frozen = true;
     gateMenu[i].fertile = true;
+    gateMenu[i].removable = false;
   }
   gateMenu[6].node.extendable = false;
   //gateMenu[7].extendable = false;
