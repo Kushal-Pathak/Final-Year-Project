@@ -2,7 +2,7 @@ class Switch {
   constructor(pos) {
     this.type = SWITCH;
     this.id = seed++;
-    this.switchRadius = 15;
+    this.switchRadius = SWITCH_RADIUS;
     this.pos = createVector(pos.x - (5 / 4) * this.switchRadius, pos.y);
     this.node = new PNode();
     this.node.pos.set(this.pos.x + this.switchRadius * 2.5, pos.y);

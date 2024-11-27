@@ -3,12 +3,11 @@ class Chip {
     this.id = seed++;
     this.type = CHIP; //type of gate
     this.pos = createVector(125, 25);
-    this.n1 = this.type === NOT ? 1 : 2;
-    this.n2 = 1;
     this.h = height - 50; //height of gate
     this.w = width - 150; //width of gate
     this.input = []; //input signals
     this.output = []; //output signals
+    this.components = [];
     this.exists = true;
     this.removable = false;
     this.selected = false;
@@ -46,6 +45,7 @@ class Chip {
       }
       this.draw();
       for (let input of this.input) input.update();
+      for (let gate of this.components) gate.update();
       for (let output of this.output) output.update();
     }
   }
@@ -103,26 +103,33 @@ class Chip {
   updateStructure() {
     if (dragObject == this || this.selected) {
       //update only if dragging / mass dragging
-      if (this.n1 > 1) {
-        for (let i = 0; i < this.n1; i++) {
-          this.input[i].pos.x = this.pos.x;
-          this.input[i].pos.y = this.pos.y + this.margin + i * this.inputGap;
-        }
-      } else {
-        this.input[0].pos.x = this.pos.x;
-        this.input[0].pos.y = this.pos.y + this.h / 2;
+      // if (this.n1 > 1) {
+      //   for (let i = 0; i < this.n1; i++) {
+      //     this.input[i].pos.x = this.pos.x;
+      //     this.input[i].pos.y = this.pos.y + this.margin + i * this.inputGap;
+      //   }
+      // } else {
+      //   this.input[0].pos.x = this.pos.x;
+      //   this.input[0].pos.y = this.pos.y + this.h / 2;
+      // }
+      // if (this.n2 > 1) {
+      //   for (let i = 0; i < this.n2; i++) {
+      //     this.output[i].pos.x = this.pos.x + this.w;
+      //     this.output[i].pos.y = this.pos.y + this.margin + i * this.outputGap;
+      //   }
+      // } else {
+      //   this.output[0].pos.x = this.pos.x + this.w;
+      //   this.output[0].pos.y = this.pos.y + this.h / 2;
+      // }
+      // this.cx = this.pos.x + this.w / 2;
+      // this.cy = this.pos.y + this.h / 2;
+      if (!this.fabricating) restructureGate(this);
+    }
+    if (mode === IC && !this.static) {
+      if (!chip.components.includes(this) && this != chip) {
+        chip.components.push(this);
+        deleteFromArrayIfExists(this, gates);
       }
-      if (this.n2 > 1) {
-        for (let i = 0; i < this.n2; i++) {
-          this.output[i].pos.x = this.pos.x + this.w;
-          this.output[i].pos.y = this.pos.y + this.margin + i * this.outputGap;
-        }
-      } else {
-        this.output[0].pos.x = this.pos.x + this.w;
-        this.output[0].pos.y = this.pos.y + this.h / 2;
-      }
-      this.cx = this.pos.x + this.w / 2;
-      this.cy = this.pos.y + this.h / 2;
     }
   }
 

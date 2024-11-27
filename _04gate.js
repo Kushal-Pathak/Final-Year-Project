@@ -119,21 +119,13 @@ class Gate {
 
   updateStructure() {
     if (dragObject == this || this.selected) {
-      //update only if dragging / mass dragging
-      if (this.n1 > 1) {
-        for (let i = 0; i < this.n1; i++) {
-          this.input[i].pos.x = this.pos.x;
-          this.input[i].pos.y = this.pos.y + this.margin + i * this.inputGap;
-        }
-      } else {
-        this.input[0].pos.x = this.pos.x;
-        this.input[0].pos.y = this.pos.y + this.h / 2;
+      restructureGate(this);
+    }
+    if (mode === IC && !this.static) {
+      if (!chip.components.includes(this)) {
+        chip.components.push(this);
+        deleteFromArrayIfExists(this, gates);
       }
-      this.output[0].pos.x = this.pos.x + this.w;
-      this.output[0].pos.y = this.pos.y + this.h / 2;
-
-      this.cx = this.pos.x + this.w / 2;
-      this.cy = this.pos.y + this.h / 2;
     }
   }
 

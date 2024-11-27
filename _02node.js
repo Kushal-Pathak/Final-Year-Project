@@ -139,30 +139,44 @@ class PNode {
     // Update while making chip
     if (mode === IC && !this.static) {
       const x1 = chip.inputArea.x;
-      const x2 = chip.outputArea.x;
-      const y1 = chip.inputArea.y;
+      const x2 = chip.inputArea.x + IO_AREA_WIDTH;
+      const x3 = chip.outputArea.x;
+      const y = chip.inputArea.y;
+      const w = chip.w;
       const h = chip.h;
+      const inner_width = w - 2 * IO_AREA_WIDTH;
 
       // Determine the node's position
-      const isInInputArea = isWithinRectangle(this, x1, y1, IO_AREA_WIDTH, h);
-      const isInOutputArea = isWithinRectangle(this, x2, y1, IO_AREA_WIDTH, h);
+      const isInInputArea = isWithinRectangle(this, x1, y, IO_AREA_WIDTH, h);
+      const isInComponentsArea = isWithinRectangle(this, x2, y, inner_width, h);
+      const isInOutputArea = isWithinRectangle(this, x3, y, IO_AREA_WIDTH, h);
 
       if (isInInputArea) {
         if (!chip.input.includes(this)) {
           chip.input.push(this); // Add to input if not already present
         }
         deleteFromArrayIfExists(this, chip.output); // Ensure it's removed from output
+        deleteFromArrayIfExists(this, chip.components);
         deleteFromArrayIfExists(this, gates);
       } else if (isInOutputArea) {
         if (!chip.output.includes(this)) {
           chip.output.push(this); // Add to output if not already present
         }
         deleteFromArrayIfExists(this, chip.input); // Ensure it's removed from input
+        deleteFromArrayIfExists(this, chip.components);
         deleteFromArrayIfExists(this, gates);
+      } else if (isInComponentsArea) {
+        if (!chip.components.includes(this)) {
+          chip.components.push(this);
+          deleteFromArrayIfExists(this, chip.input);
+          deleteFromArrayIfExists(this, chip.output);
+          deleteFromArrayIfExists(this, gates);
+        }
       } else {
         // Node is outside both input and output areas
         if (!gates.includes(this)) gates.push(this);
         deleteFromArrayIfExists(this, chip.input);
+        deleteFromArrayIfExists(this, chip.components);
         deleteFromArrayIfExists(this, chip.output);
       }
     }

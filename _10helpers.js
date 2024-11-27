@@ -30,53 +30,6 @@ function computeGate(gate) {
   }
 }
 
-function findSourceFrom(freshGates) {
-  for (let gate of freshGates) {
-    if (gate.type === NODE) {
-      if (gate.source) gate.source = findNodeWithId(gate.source.id, freshGates);
-    } else if (GATELIST.includes(gate.type)) {
-      for (let input of gate.input) {
-        if (input.source)
-          input.source = findNodeWithId(input.source.id, freshGates);
-      }
-    } else if (gate.type === CHIP) {
-      for (let input of gate.input) {
-        if (input.source)
-          input.source = findNodeWithId(input.source.id, freshGates);
-      }
-      for (let output of gate.output) {
-        if (output.source)
-          output.source = findNodeWithId(output.source.id, freshGates);
-      }
-    }
-  }
-}
-
-function findNodeWithId(id, freshGates) {
-  for (let gate of freshGates) {
-    if (gate.id === id && gate.type === NODE) {
-      return gate;
-    }
-    if (gate.type === SWITCH && gate.node.id === id) {
-      return gate.node;
-    }
-    if (GATELIST.includes(gate.type)) {
-      for (let output of gate.output) {
-        if (output.id === id) return output;
-      }
-    }
-    if (gate.type === CHIP) {
-      for (let input of gate.input) {
-        if (input.id === id) return input;
-      }
-      for (let output of gate.output) {
-        if (output.id === id) return output;
-      }
-    }
-  }
-  return null;
-}
-
 function clearSimulation() {
   gates = [];
   if (mode === IC) {
@@ -84,17 +37,6 @@ function clearSimulation() {
     gates.push(chip);
   }
 }
-
-// function changeMode() {
-//   if (mode === SIM) {
-//     mode = IC;
-//     SIM_BTN.style.borderRadius = "";
-//     IC_BTN.style.borderRadius = "15px";
-//     gates.push(new Commentt(CHIP));
-//   } else {
-//     mode = SIM;
-//   }
-// }
 
 function simulationMode() {
   if (mode === IC) {
@@ -246,17 +188,75 @@ function assignColor(gate) {
   gate.color = color(26, 54, 54);
 }
 
-function reIdentifyGates(freshGates) {
-  for (let gate of freshGates) {
+function reIdentifyGates(gateArray) {
+  for (let gate of gateArray) {
     gate.getNewId();
     if (gate.type === SWITCH) gate.node.getNewId();
-    if (gate.type === CHIP || GATELIST.includes(gate.type)) {
+    if (GATELIST.includes(gate.type)) {
+      for (let input of gate.input) input.getNewId();
+      for (let output of gate.output) output.getNewId();
+    }
+    if (gate.type === CHIP) {
+      for (let input of gate.input) input.getNewId();
+      for (let input of gate.input) input.getNewId();
+      reIdentifyGates(gate.components);
+    }
+  }
+}
+
+function assignSource(gateArray, nextGateArray = []) {
+  //assigns sources to all gates in an array or components in chip
+  for (let gate of gateArray) {
+    if (gate.type === NODE) {
+      let foundGate = findGate(gate.source, gateArray);
+      if (foundGate) gate.source = foundGate;
+      else gate.source = findGate(gate.source, nextGateArray);
+    }
+    if (GATELIST.includes(gate.type)) {
       for (let input of gate.input) {
-        input.getNewId();
+        let foundGate = findGate(input.source, gateArray);
+        if (foundGate) input.source = foundGate;
+        else input.source = findGate(input.source, nextGateArray);
+      }
+    }
+    if (gate.type === CHIP) {
+      for (let input of gate.input) {
+        let foundGate = findGate(input.source, gateArray);
+        if (foundGate) input.source = foundGate;
+        else input.source = findGate(input.source, nextGateArray);
       }
       for (let output of gate.output) {
-        output.getNewId();
+        let foundGate = findGate(output.source, gate.input);
+        if (foundGate) output.source = foundGate;
+        else output.source = findGate(output.source, gate.components);
+      }
+      assignSource(gate.components, gate.input);
+    }
+  }
+}
+
+function findGate(sourcee, gateArray) {
+  if (sourcee) {
+    const id = sourcee.id;
+    for (let gate of gateArray) {
+      if (gate.type === NODE && gate.id === id) {
+        return gate;
+      }
+      if (gate.type === SWITCH && gate.node.id === id) {
+        console.log(gate)
+        return gate.node;
+      }
+      if (GATELIST.includes(gate.type)) {
+        for (let output of gate.output) {
+          if (output.id === id) return output;
+        }
+      }
+      if (gate.type === CHIP) {
+        for (let output of gate.output) {
+          if (output.id === id) return output;
+        }
       }
     }
   }
+  return null;
 }

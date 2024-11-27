@@ -12,7 +12,7 @@ const SIM = "SIMULATION"; //simulate mode
 const IC = "NEW_CHIP"; //integrated circuit mode
 
 const NODE_RADIUS = 6.5;
-const SWITCH_RADIUS = 15;
+const SWITCH_RADIUS = 10;
 const IO_AREA_WIDTH = 50;
 
 const CHILD_NODES_ARE_DRAWN = true;
