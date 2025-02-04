@@ -22,8 +22,9 @@ let myNewGate = null;
 let recycleBin = [];
 let seedCounter = seed;
 let mode = SIM;
+let canvas;
 function setup() {
-  createCanvas(windowWidth - 17, windowHeight - 56);
+  canvas = createCanvas(windowWidth - 17, windowHeight - 56);
   areaDragOffset = createVector(0, 0);
   pressedPos = createVector(0, 0);
   releasedPos = createVector(0, 0);
@@ -34,11 +35,32 @@ function setup() {
   gateMenufunc();
   simulationMode();
   seed = Date.now();
-  //ICMode()
 }
 
 function draw() {
   background(150);
+  // const x = 300;
+  // const y = 250;
+  // const h = 50;
+  // const w = 120;
+  // const cx1 = x;
+  // const cy1 = y;
+  // const cx2 = x;
+  // const cy2 = y;
+
+  // const start_angle = -PI / 2;
+  // const end_angle = PI / 2;
+  // push();
+  // strokeWeight(2.5);
+  // stroke(255);
+  // arc(x, y + w / 4, w, w, -PI / 1.85, -PI / 6); //upper arc
+  // arc(x, y - w / 4, w, w, PI / 6, PI / 1.85); //lower arc
+  // arc(x - w / 2, y, w, w, -PI / 6, PI / 6); //left arc
+  // const rad_squared = (w * w) / 4;
+  // for (let i = x; i < x + w / 2; i++) {
+  //   for (let j = y - w / 4; j < y + w / 4; j++) {}
+  // }
+  // pop();
   noStroke();
   fill(43, 48, 53);
   rect(0, 0, 100, height);

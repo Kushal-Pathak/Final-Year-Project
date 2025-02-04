@@ -31,6 +31,7 @@ function computeGate(gate) {
 }
 
 function clearSimulation() {
+  console.log("clearing simulation");
   gates = [];
   if (mode === IC) {
     chip = new Componentt(CHIP);
@@ -243,7 +244,6 @@ function findGate(sourcee, gateArray) {
         return gate;
       }
       if (gate.type === SWITCH && gate.node.id === id) {
-        console.log(gate)
         return gate.node;
       }
       if (GATELIST.includes(gate.type)) {
@@ -259,4 +259,86 @@ function findGate(sourcee, gateArray) {
     }
   }
   return null;
+}
+
+function assignTargets(gateArray) {
+  for (let gate of gateArray) {
+    if (gate.type === NODE && gate.source && gate.source.exists) {
+      gate.source.targets.push(gate);
+    }
+
+    if (gate.type === SWITCH) {
+      //the logic of this algorithm says no need to bother about switch
+    }
+
+    if (GATELIST.includes(gate.type)) {
+      for (let input of gate.input) {
+        if (input.source && input.source.exists) {
+          input.source.targets.push(input);
+        }
+      }
+    }
+    if (gate.type === CHIP) {
+      for (let input of gate.input) {
+        if (input.source && input.source.exists) {
+          input.source.targets.push(input);
+        }
+      }
+      for (let output of gate.output) {
+        if (output.source && output.source.exists) {
+          output.source.targets.push(output);
+        }
+      }
+      assignTargets(gate.components);
+    }
+  }
+}
+
+function assignParentToNodes(gatesArray) {
+  for (let gate of gatesArray) {
+    if (GATELIST.includes(gate.type) || gate.type === CHIP) {
+      //gate.input = gate.input.map((input) => (input.parent = gate));
+      for (let input of gate.input) input.parent = gate;
+      for (let output of gate.output) output.parent = gate;
+    }
+    if (gate.type === SWITCH) gate.node.parent = gate;
+    if (gate.type === CHIP) {
+      assignParentToNodes(gate.components);
+    }
+  }
+}
+
+function drawGatePicture(gate) {
+  // if (!gate || !gate.type) return;
+  // const x = gate.pos.x;
+  // const y = gate.pos.y;
+  // const h = 50;
+  // const w = 70;
+  // const start_angle = 0;
+  // const end_angle = PI;
+  // if (gate.type === AND) {
+  //   push();
+  //   strokeWeight(3);
+  //   stroke(255);
+  //   fill(0);
+  //   arc(x, y, w, h, -PI / 2, PI / 2);
+  //   line(x, y - h / 2, x, y + h / 2);
+  //   circle(x, y - h * 0.2, 2 * NODE_RADIUS);
+  //   circle(x, y + h * 0.2, 2 * NODE_RADIUS);
+  //   circle(x + w / 2, y, 2 * NODE_RADIUS);
+  //   pop();
+  // }
+  // if (gate.type === OR) {
+  //   push();
+  //   strokeWeight(3);
+  //   stroke(255);
+  //   fill(0);
+  //   arc(x, y - NODE_RADIUS / 2, w, w, -PI / 2, end_angle);
+  //   arc(x, y + NODE_RADIUS / 2, w, w, start_angle, end_angle);
+  //   line(x, y - h / 2, x, y + h / 2);
+  //   circle(x, y - h * 0.2, 2 * NODE_RADIUS);
+  //   circle(x, y + h * 0.2, 2 * NODE_RADIUS);
+  //   circle(x + w / 2, y, 2 * NODE_RADIUS);
+  //   pop();
+  // }
 }

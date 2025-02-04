@@ -10,6 +10,7 @@ class Switch {
     this.node.dockable = false;
     this.node.removable = false;
     this.node.source = null;
+    this.node.parent = this;
     this.fertile = false; //
     this.exists = true; //
     this.removable = true; //
@@ -43,7 +44,7 @@ class Switch {
     stroke(255);
     strokeWeight(3);
     line(this.pos.x, this.pos.y, this.node.pos.x, this.node.pos.y);
-    fill(100, 0, 0);
+    fill(0, 0, 0);
     circle(this.pos.x, this.pos.y, this.switchRadius * 2);
     this.node.draw();
   }
@@ -152,3 +153,5 @@ class Switch {
     this.id = seed++;
   }
 }
+
+

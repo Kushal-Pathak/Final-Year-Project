@@ -1,0 +1,2 @@
+# A FINAL YEAR PROJECT ON DIGITAL LOGIC SIMULATOR
+This Digital Logic Simulator is a web-based application that allows users to design, connect, and simulate digital logic circuits in real time. Built using HTML, CSS, JavaScript, PHP, MySQL, and Bootstrap, this tool provides an interactive and user-friendly environment for learning and experimenting with logic gates.

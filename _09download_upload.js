@@ -124,9 +124,12 @@ function deSerializeGate(gate) {
 }
 
 function serializeCircuit(circuit) {
-  let serializedCircuit = circuit.map((gate) => serializeGate(gate));
-  serializedCircuit = JSON.stringify(serializedCircuit);
-  return serializedCircuit;
+  if (circuit.length) {
+    let serializedCircuit = circuit.map((gate) => serializeGate(gate));
+    serializedCircuit = JSON.stringify(serializedCircuit);
+    return serializedCircuit;
+  }
+  return null;
 }
 
 function deSerializeCircuit(circuit) {
@@ -136,27 +139,29 @@ function deSerializeCircuit(circuit) {
 }
 
 function downloadCircuit(filename) {
-  if (mode === SIM) {
-    filename = prompt("Please enter the circuit name:", "New Circuit");
-    if (filename === "") filename = "New Circuit";
-    else if (filename === null) return null;
-  }
-  if (mode === IC) {
-    filename = prompt("Please enter the chip name:", "New Chip");
-    if (filename === "") filename = "New Chip";
-    else if (filename === null) return null;
-    chip.name = filename;
-    minifyChip();
-    encapsulateComponents();
-  }
+  if (gates.length) {
+    if (mode === SIM) {
+      filename = prompt("Please enter the circuit name:", "New Circuit");
+      if (filename === "") filename = "New Circuit";
+      else if (filename === null) return null;
+    }
+    if (mode === IC) {
+      filename = prompt("Please enter the chip name:", "New Chip");
+      if (filename === "") filename = "New Chip";
+      else if (filename === null) return null;
+      chip.name = filename;
+      minifyChip();
+      encapsulateComponents();
+    }
 
-  const serializedCircuit = serializeCircuit(gates);
-  const blob = new Blob([serializedCircuit], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
+    const serializedCircuit = serializeCircuit(gates);
+    const blob = new Blob([serializedCircuit], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
 }
 
 function uploadCircuit() {
@@ -177,6 +182,8 @@ function uploadCircuit() {
       try {
         const deSerializedCircuit = deSerializeCircuit(event.target.result);
         assignSource(deSerializedCircuit);
+        assignTargets(deSerializedCircuit);
+        assignParentToNodes(deSerializedCircuit);
         reIdentifyGates(deSerializedCircuit);
         gates.push(...deSerializedCircuit); // Add new gates
       } catch (error) {

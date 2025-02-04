@@ -5,7 +5,7 @@ class PNode {
     this.pos = pos;
     this.source = null;
     this.signal = 0;
-    this.color = this.signal ? color(255, 0, 0) : color(100, 0, 0);
+    this.color = this.signal ? color(255, 0, 0) : color(0, 0, 0);
     this.static = false;
     this.dockable = true;
     this.extendable = true;
@@ -21,6 +21,8 @@ class PNode {
     this.new = true;
     this.insideInput = false; //for chip input/output
     this.insideOutput = false;
+    this.targets = [];
+    this.parent = null;
   }
   update(alreadyDrawn) {
     this.delete();
@@ -75,8 +77,14 @@ class PNode {
     //establish/dock connection
     if (this.dockable && wireBin && this !== wireBin) {
       if (releasedInside(this)) {
+        if (this.source) deleteFromArrayIfExists(this, this.source.targets);
         this.source = wireBin;
         wireBin = null;
+
+        //setting this as source's target
+        if (!this.source.targets.includes(this)) {
+          this.source.targets.push(this);
+        }
       }
     }
 
@@ -89,6 +97,8 @@ class PNode {
       this.source
     ) {
       if (pressedInside(this)) {
+        //removing this from source's target
+        deleteFromArrayIfExists(this, this.source.targets);
         this.source = null;
         this.signal = 0;
       }
@@ -132,7 +142,7 @@ class PNode {
         this.signal = 0;
       }
     }
-    this.color = this.signal ? color(255, 0, 0) : color(100, 0, 0);
+    this.color = this.signal ? color(255, 0, 0) : color(0, 0, 0);
   }
 
   updateStructure() {

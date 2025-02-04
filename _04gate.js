@@ -26,6 +26,7 @@ class Gate {
       node.static = true;
       node.extendable = false;
       node.removable = false;
+      node.parent = this;
       this.input.push(node);
     }
 
@@ -35,6 +36,7 @@ class Gate {
       node.static = true;
       node.dockable = false;
       node.removable = false;
+      node.parent = this;
       this.output.push(node);
     }
 
